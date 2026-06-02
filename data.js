@@ -28,7 +28,7 @@ function normalizeProduct(product) {
         : [normalizeSizeEntry({ size: product && product.size, unit: product && product.unit, price: product && product.price })];
 
     return {
-        id: Number(product && product.id) || Date.now(),
+        id: (product && product.id) || String(Date.now()),
         name: (product && product.name) || '',
         brand: (product && product.brand) || '',
         category: (product && product.category) || '',

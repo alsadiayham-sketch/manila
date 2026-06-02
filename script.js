@@ -1,4 +1,4 @@
-var FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%234a2c17' width='400' height='400'/%3E%3Ctext fill='%23d4a574' font-family='Arial' font-size='40' x='50%25' y='45%25' text-anchor='middle'%3E🍫%3C/text%3E%3Ctext fill='%23d4a574' font-family='Arial' font-size='20' x='50%25' y='60%25' text-anchor='middle'%3ESard Chocolate%3C/text%3E%3C/svg%3E";
+var FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27400%27 viewBox=%270 0 400 400%27%3E%3Crect fill=%27%231a1020%27 width=%27400%27 height=%27400%27/%3E%3Ctext x=%27200%27 y=%27200%27 text-anchor=%27middle%27 dy=%270.35em%27 font-family=%27serif%27 font-size=%2736%27 fill=%27%23c9a96e%27%3EMANILA%3C/text%3E%3C/svg%3E";
 
 var products = [];
 var discounts = [];
@@ -84,7 +84,7 @@ function subscribeToStoreData() {
     db.collection('products').orderBy('id').limit(6).get().then(function (snapshot) {
         if (!snapshot.empty) {
             products = snapshot.docs.map(function (docSnap) {
-                return normalizeProduct(docSnap.data());
+                var d = docSnap.data(); d.id = docSnap.id; return normalizeProduct(d);
             });
             syncCartWithProducts();
             markStoreLoaded('products');
@@ -92,8 +92,8 @@ function subscribeToStoreData() {
         // Now subscribe to all products for real-time updates
         unsubscribers.push(db.collection('products').onSnapshot(function (fullSnapshot) {
             products = fullSnapshot.docs.map(function (docSnap) {
-                return normalizeProduct(docSnap.data());
-            }).sort(function (a, b) { return a.id - b.id; });
+                var d = docSnap.data(); d.id = docSnap.id; return normalizeProduct(d);
+            });
             syncCartWithProducts();
             markStoreLoaded('products');
         }, function () {
@@ -104,8 +104,8 @@ function subscribeToStoreData() {
         // Fallback to full subscription if initial fetch fails
         unsubscribers.push(db.collection('products').onSnapshot(function (snapshot) {
             products = snapshot.docs.map(function (docSnap) {
-                return normalizeProduct(docSnap.data());
-            }).sort(function (a, b) { return a.id - b.id; });
+                var d = docSnap.data(); d.id = docSnap.id; return normalizeProduct(d);
+            });
             syncCartWithProducts();
             markStoreLoaded('products');
         }, function () {
@@ -370,7 +370,7 @@ function setupSearch(inputId, dropdownId) {
         } else {
             dropdown.innerHTML = results.map(function (product) {
                 var pricing = getFinalPrice(product, 0, discounts);
-                return '<div class="search-item" onclick="scrollToProduct(' + product.id + ')"><img src="' + product.image + '" alt="' + product.name + '" onerror="this.src=\'' + FALLBACK_IMAGE + '\'"><div class="search-item-info"><h4>' + product.name + '</h4><span>' + product.brand + ' • ' + product.category + ' • ' + getSizeLabel(getSizeData(product, 0)) + ' • ' + formatCurrency(pricing.final) + '</span></div></div>';
+                return '<div class="search-item" onclick="scrollToProduct(\'' + product.id + '\')"><img src="' + product.image + '" alt="' + product.name + '" onerror="this.src=\'' + FALLBACK_IMAGE + '\'"><div class="search-item-info"><h4>' + product.name + '</h4><span>' + product.brand + ' • ' + product.category + ' • ' + getSizeLabel(getSizeData(product, 0)) + ' • ' + formatCurrency(pricing.final) + '</span></div></div>';
             }).join('');
         }
         dropdown.classList.add('active');
