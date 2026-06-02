@@ -113,7 +113,6 @@
 
         function initializeCheckout() {
             cart = normalizeCartItems(JSON.parse(localStorage.getItem('manila_cart') || '[]'), products);
-            saveCart();
             render();
             setStatus('');
 
@@ -135,7 +134,7 @@
                     clearTimeout(timeout);
 
                     if (!productsSnap.empty) {
-                        products = productsSnap.docs.map(function (docSnap) { return normalizeProduct(docSnap.data()); }).sort(function (a, b) { return a.id - b.id; });
+                        products = productsSnap.docs.map(function (docSnap) { var d = docSnap.data(); d.id = docSnap.id; return normalizeProduct(d); });
                     }
                     discounts = discountsSnap.docs.map(function (docSnap) { return normalizeDiscount(docSnap.data()); });
                     siteSettings = normalizeSettings(settingsSnap.exists ? settingsSnap.data() : DEFAULT_SITE_SETTINGS);
