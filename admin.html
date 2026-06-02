@@ -114,7 +114,7 @@
 
         <div class="tab-content" id="tab-settings">
             <div class="tab-header"><h3>إعدادات الموقع</h3></div>
-            <form class="settings-form" onsubmit="saveSettingsForm(event)">
+            <form class="settings-form" onsubmit="event.preventDefault(); saveSettingsForm(event)">
                 <div class="form-group"><label>رقم WhatsApp</label><input type="text" id="settingWhatsappNumber" placeholder="9725xxxxxxxx"></div>
                 <div class="form-group"><label>الوصف الرئيسي (Hero)</label><input type="text" id="settingHero" placeholder="أول و أكبر متجر..."></div>
                 <div class="form-group"><label>نص من نحن</label><textarea id="settingAbout" rows="4"></textarea></div>
@@ -128,7 +128,7 @@
     <div class="modal-overlay" id="productModal" style="display:none;">
         <div class="modal">
             <h3 id="productModalTitle">إضافة منتج جديد</h3>
-            <form onsubmit="saveProduct(event)">
+            <form onsubmit="event.preventDefault(); saveProduct(event)">
                 <input type="hidden" id="productId">
                 <div class="form-row">
                     <div class="form-group"><label>اسم المنتج</label><input type="text" id="productName" required></div>
@@ -156,7 +156,7 @@
     <div class="modal-overlay" id="discountModal" style="display:none;">
         <div class="modal small-modal">
             <h3 id="discountModalTitle">إضافة خصم</h3>
-            <form onsubmit="saveDiscount(event)">
+            <form onsubmit="event.preventDefault(); saveDiscount(event)">
                 <input type="hidden" id="discountId">
                 <div class="form-group"><label>نوع الخصم</label><select id="discountType" onchange="toggleDiscountValueField()"><option value="all">على جميع المنتجات</option><option value="brand">حسب الماركة</option><option value="category">حسب الفئة</option><option value="manual">يدوي</option></select></div>
                 <div class="form-group" id="discountValueGroup" style="display:none;"><label>اختاري (يمكن اختيار أكثر من واحد)</label><div id="discountValueCheckboxes" class="checkbox-list"></div></div>
