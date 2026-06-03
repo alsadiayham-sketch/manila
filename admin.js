@@ -432,6 +432,17 @@ function openHeroSlideModal(slide) {
     document.getElementById('heroSlideTitle').value = slide ? slide.title : '';
     document.getElementById('heroSlideSubtitle').value = slide ? slide.subtitle : '';
     document.getElementById('heroSlideOrder').value = slide ? (Number(slide.order) || 1) : (heroSlides.length + 1);
+    document.getElementById('heroSlideFile').value = '';
+    var preview = document.getElementById('heroMediaPreview');
+    if (slide && slide.mediaUrl) {
+        if (slide.mediaType === 'video') {
+            preview.innerHTML = '<video src="' + slide.mediaUrl + '" style="max-width:100%;max-height:150px;" muted autoplay loop playsinline></video>';
+        } else {
+            preview.innerHTML = '<img src="' + slide.mediaUrl + '" style="max-width:100%;max-height:150px;">';
+        }
+    } else {
+        preview.innerHTML = '';
+    }
     document.getElementById('heroSlideModal').style.display = 'flex';
 }
 
@@ -443,10 +454,27 @@ function editHeroSlide(id) {
 async function saveHeroSlide(event) {
     event.preventDefault();
     var existingId = document.getElementById('heroSlideId').value;
+    var mediaUrl = document.getElementById('heroSlideMediaUrl').value.trim();
+    var fileInput = document.getElementById('heroSlideFile');
+    var mediaType = document.getElementById('heroSlideMediaType').value;
+
+    // Handle file upload
+    if (fileInput.files && fileInput.files[0]) {
+        setAdminLoading(true);
+        setAdminStatus('جاري رفع الملف...', 'info');
+        try {
+            mediaUrl = await uploadMedia(fileInput.files[0]);
+        } catch (err) {
+            setAdminLoading(false);
+            setAdminStatus('فشل رفع الملف: ' + err.message, 'error');
+            return;
+        }
+    }
+
     var heroSlideData = normalizeHeroSlide({
         id: existingId || 'hero_' + Date.now(),
-        mediaUrl: document.getElementById('heroSlideMediaUrl').value.trim(),
-        mediaType: document.getElementById('heroSlideMediaType').value,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
         title: document.getElementById('heroSlideTitle').value.trim(),
         subtitle: document.getElementById('heroSlideSubtitle').value.trim(),
         order: parseInt(document.getElementById('heroSlideOrder').value || '1', 10)
@@ -759,6 +787,82 @@ function closeModal(id) {
 }
 
 // Image upload functions
+var IMGBB_API_KEY = 'd14f65fb697224837b49489e5f8d8b57';
+
+async function uploadToImgbb(file) {
+    var formData = new FormData();
+    formData.append('image', file);
+    var response = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
+        method: 'POST',
+        body: formData
+    });
+    var result = await response.json();
+    if (!result.success) throw new Error(result.error ? result.error.message : 'Upload failed');
+    return result.data.url;
+}
+
+async function uploadMedia(file) {
+    var isVideo = file.type.startsWith('video/');
+    if (isVideo) {
+        // Convert video to GIF then upload to imgbb
+        var gifBlob = await convertVideoToGif(file);
+        return await uploadToImgbb(gifBlob);
+    }
+    return await uploadToImgbb(file);
+}
+
+function convertVideoToGif(file) {
+    return new Promise(function (resolve, reject) {
+        var videoUrl = URL.createObjectURL(file);
+        gifshot.createGIF({
+            video: [videoUrl],
+            gifWidth: 480,
+            gifHeight: 270,
+            numFrames: 30,
+            frameDuration: 3,
+            sampleInterval: 10
+        }, function (obj) {
+            URL.revokeObjectURL(videoUrl);
+            if (obj.error) {
+                reject(new Error('فشل تحويل الفيديو إلى GIF'));
+                return;
+            }
+            // Convert base64 to blob
+            var byteString = atob(obj.image.split(',')[1]);
+            var ab = new ArrayBuffer(byteString.length);
+            var ia = new Uint8Array(ab);
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            var blob = new Blob([ab], { type: 'image/gif' });
+            resolve(blob);
+        });
+    });
+}
+
+function previewHeroMedia(input) {
+    var preview = document.getElementById('heroMediaPreview');
+    if (input.files && input.files[0]) {
+        var file = input.files[0];
+        var isVideo = file.type.startsWith('video/');
+        // Auto-detect media type — videos get converted to GIF for upload
+        document.getElementById('heroSlideMediaType').value = isVideo ? 'video' : 'image';
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            if (isVideo) {
+                preview.innerHTML = '<video src="' + e.target.result + '" style="max-width:100%;max-height:150px;" muted autoplay loop playsinline></video><p style="color:#5a5a5a;font-size:0.8rem;margin-top:5px;">سيتم تحويل الفيديو إلى GIF للرفع</p>';
+            } else {
+                preview.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:150px;">';
+            }
+        };
+        reader.readAsDataURL(file);
+        // Clear URL input when file is selected
+        document.getElementById('heroSlideMediaUrl').value = '';
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
 function previewImage(input) {
     var preview = document.getElementById('imagePreview');
     if (input.files && input.files[0]) {
@@ -775,27 +879,5 @@ function previewImage(input) {
 }
 
 async function uploadProductImage(file, productId) {
-    // Compress and convert to base64 data URL (stored in Firestore directly)
-    return new Promise(function (resolve) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            var img = new Image();
-            img.onload = function () {
-                var canvas = document.createElement('canvas');
-                var maxSize = 400;
-                var w = img.width;
-                var h = img.height;
-                if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
-                else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
-                canvas.width = w;
-                canvas.height = h;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-                var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                resolve(dataUrl);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+    return await uploadMedia(file);
 }

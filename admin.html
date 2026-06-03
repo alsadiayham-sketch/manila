@@ -191,8 +191,15 @@
             <h3 id="heroSlideModalTitle">إضافة شريحة هيرو</h3>
             <form onsubmit="event.preventDefault(); saveHeroSlide(event)">
                 <input type="hidden" id="heroSlideId">
-                <div class="form-group"><label>رابط الوسيط</label><input type="url" id="heroSlideMediaUrl" placeholder="https://..." required></div>
-                <div class="form-group"><label>نوع الوسيط</label><select id="heroSlideMediaType"><option value="image">صورة</option><option value="video">فيديو</option></select></div>
+                <div class="form-group"><label>الوسيط (صورة أو فيديو)</label>
+                    <div class="image-upload-group">
+                        <input type="file" id="heroSlideFile" accept="image/*,video/*" onchange="previewHeroMedia(this)">
+                        <span class="upload-or">أو</span>
+                        <input type="url" id="heroSlideMediaUrl" placeholder="رابط الصورة أو الفيديو https://...">
+                    </div>
+                    <div id="heroMediaPreview" class="image-preview"></div>
+                </div>
+                <input type="hidden" id="heroSlideMediaType" value="image">
                 <div class="form-group"><label>العنوان</label><input type="text" id="heroSlideTitle" required></div>
                 <div class="form-group"><label>النص الفرعي</label><input type="text" id="heroSlideSubtitle" required></div>
                 <div class="form-group"><label>الترتيب</label><input type="number" id="heroSlideOrder" min="1" value="1" required></div>
@@ -202,6 +209,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>

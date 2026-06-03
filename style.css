@@ -1,19 +1,19 @@
-/* ===== Variables ===== */
+/* ===== Variables (Modern Theme as Default) ===== */
 :root {
-    --primary: #3c352a;
-    --primary-light: #5a5047;
-    --primary-lighter: #fdfbf7;
-    --primary-dark: #2a241c;
-    --accent: #caa87a;
-    --gold: #caa87a;
-    --bg: #fdfbf7;
-    --bg-alt: #f7f3ed;
-    --text: #3c352a;
-    --text-light: #7a7062;
+    --primary: #111111;
+    --primary-light: #2b2b2b;
+    --primary-lighter: #f1f1f1;
+    --primary-dark: #000000;
+    --accent: #ff4444;
+    --gold: #ff4444;
+    --bg: #ffffff;
+    --bg-alt: #f4f4f4;
+    --text: #111111;
+    --text-light: #5a5a5a;
     --white: #ffffff;
-    --hero-overlay: linear-gradient(135deg, rgba(18, 14, 10, 0.72), rgba(60, 53, 42, 0.36));
-    --shadow: 0 2px 12px rgba(60,53,42,0.06);
-    --shadow-hover: 0 6px 24px rgba(60,53,42,0.12);
+    --hero-overlay: linear-gradient(135deg, rgba(0, 0, 0, 0.78), rgba(17, 17, 17, 0.38));
+    --shadow: 0 2px 14px rgba(17, 17, 17, 0.08);
+    --shadow-hover: 0 8px 26px rgba(17, 17, 17, 0.15);
     --radius: 16px;
     --transition: all 0.3s ease;
 }
@@ -165,10 +165,6 @@ body.has-banner .mobile-menu { top: 102px; }
 }
 
 .mobile-menu a:hover { background: var(--primary-lighter); }
-
-.theme-home-link {
-    font-weight: 700;
-}
 
 /* ===== Hero ===== */
 .hero {
@@ -730,42 +726,6 @@ body.has-banner .mobile-menu { top: 102px; }
     text-align: center;
     background: var(--text);
     color: var(--white);
-}
-
-.footer-themes {
-    margin-bottom: 18px;
-}
-
-.footer-themes-label {
-    display: inline-block;
-    margin-bottom: 10px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.88);
-}
-
-.theme-links {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.theme-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 16px;
-    border-radius: 999px;
-    text-decoration: none;
-    color: var(--white);
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.16);
-    transition: var(--transition);
-}
-
-.theme-link:hover {
-    background: rgba(255,255,255,0.2);
-    transform: translateY(-2px);
 }
 
 /* ===== Cart Icon ===== */
