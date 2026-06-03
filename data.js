@@ -10,6 +10,39 @@ var DEFAULT_SITE_SETTINGS = {
     tiktokLink: ''
 };
 
+var DEFAULT_HERO_SLIDES = [
+    {
+        id: 'hero-default-1',
+        mediaUrl: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=1920&q=80',
+        mediaType: 'image',
+        title: 'عطور أصلية فاخرة',
+        subtitle: 'اكتشفي تشكيلتنا المميزة',
+        order: 1,
+        ctaText: 'تسوقي الآن',
+        ctaLink: '#products'
+    },
+    {
+        id: 'hero-default-2',
+        mediaUrl: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=1920&q=80',
+        mediaType: 'image',
+        title: 'ملكة العطور',
+        subtitle: 'أجود الماركات العالمية',
+        order: 2,
+        ctaText: 'تسوقي الآن',
+        ctaLink: '#products'
+    },
+    {
+        id: 'hero-default-3',
+        mediaUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=1920&q=80',
+        mediaType: 'image',
+        title: 'عروض حصرية',
+        subtitle: 'خصومات تصل حتى 50%',
+        order: 3,
+        ctaText: 'تسوقي الآن',
+        ctaLink: '#products'
+    }
+];
+
 var BRANDS_DATA = [{ name: 'Manila', logo: 'logo.png' }];
 
 function normalizeSizeEntry(entry) {
@@ -76,6 +109,35 @@ function buildWhatsAppUrl(number, message) {
     var safeNumber = extractWhatsappNumber(number);
     var text = message ? '?text=' + encodeURIComponent(message) : '';
     return 'https://wa.me/' + safeNumber + text;
+}
+
+function normalizeHeroSlide(slide, index) {
+    var source = slide || {};
+    var mediaUrl = String(source.mediaUrl || source.image || source.url || '').trim();
+    var mediaType = String(source.mediaType || '').toLowerCase();
+    if (['image', 'video'].indexOf(mediaType) === -1) {
+        mediaType = /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(mediaUrl) ? 'video' : 'image';
+    }
+    return {
+        id: String(source.id || source.docId || 'hero_' + Date.now() + '_' + (index || 0)),
+        mediaUrl: mediaUrl,
+        mediaType: mediaType || 'image',
+        title: String(source.title || '').trim(),
+        subtitle: String(source.subtitle || '').trim(),
+        order: Math.max(0, Number(source.order) || index || 0),
+        ctaText: String(source.ctaText || 'تسوقي الآن').trim(),
+        ctaLink: String(source.ctaLink || '#products').trim() || '#products'
+    };
+}
+
+function normalizeHeroSlides(list) {
+    return (Array.isArray(list) ? list : []).map(function (slide, index) {
+        return normalizeHeroSlide(slide, index + 1);
+    }).filter(function (slide) {
+        return !!slide.mediaUrl;
+    }).sort(function (a, b) {
+        return (Number(a.order) || 0) - (Number(b.order) || 0);
+    });
 }
 
 function normalizeSettings(settings) {

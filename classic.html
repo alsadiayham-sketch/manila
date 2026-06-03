@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manila Perfume</title>
+    <title>Manila Perfume - كلاسيك</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="themes.css">
     <link rel="icon" href="logo.png">
 </head>
-<body>
+<body data-theme="classic">
     <div class="discount-banner" id="discountBanner" style="display:none;">
         <div class="banner-scroll">
             <span id="bannerText"></span>
@@ -21,7 +21,7 @@
 
     <nav class="navbar" id="navbar">
         <div class="container nav-container">
-            <a href="#" class="logo">
+            <a href="index.html" class="logo">
                 <img src="logo.png" alt="Manila Perfume" class="logo-img" id="logoImg">
                 <span id="logoText" class="logo-text">Manila Perfume</span>
             </a>
@@ -36,6 +36,7 @@
                 <li><a href="#delivery">التوصيل</a></li>
                 <li><a href="#contact">تواصلي معنا</a></li>
                 <li><a href="#order-tracking">تتبّع الطلب</a></li>
+                            <li><a href="index.html" class="theme-home-link">العودة للصفحة الرئيسية</a></li>
             </ul>
             <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
                 🛒
@@ -51,6 +52,7 @@
         <a href="#delivery" onclick="toggleMobileMenu()">التوصيل</a>
         <a href="#contact" onclick="toggleMobileMenu()">تواصلي معنا</a>
         <a href="#order-tracking" onclick="toggleMobileMenu()">تتبّع الطلب</a>
+        <a href="index.html" onclick="toggleMobileMenu()" class="theme-home-link">العودة للصفحة الرئيسية</a>
     </div>
     <section class="hero hero-carousel" id="heroCarousel" aria-label="العروض الرئيسية">
         <div class="hero-carousel-track" id="heroSlidesContainer"></div>

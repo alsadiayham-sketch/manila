@@ -4,6 +4,7 @@ var FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/
 
 var products = [];
 var discounts = [];
+var heroSlides = [];
 var orders = [];
 var siteSettings = normalizeSettings(DEFAULT_SITE_SETTINGS);
 var unsubscribers = [];
@@ -14,7 +15,8 @@ var adminReady = {
     products: false,
     discounts: false,
     orders: false,
-    settings: false
+    settings: false,
+    heroSlides: false
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -77,6 +79,7 @@ function switchTab(tab, button) {
     if (button) button.classList.add('active');
     if (tab === 'dashboard') renderDashboard();
     if (tab === 'orders') renderOrdersTable();
+    if (tab === 'hero') renderHeroSlidesTable();
 }
 
 async function initializeAdmin() {
@@ -155,6 +158,24 @@ function subscribeToCollections() {
         setAdminLoading(false);
     }));
 
+    unsubscribers.push(db.collection('heroSlides').orderBy('order').onSnapshot(function (snapshot) {
+        heroSlides = snapshot.docs.map(function (docSnap, index) {
+            var data = docSnap.data() || {};
+            data.id = docSnap.id;
+            return normalizeHeroSlide(data, index + 1);
+        });
+        adminReady.heroSlides = true;
+        renderHeroSlidesTable();
+        checkAdminReady();
+    }, function (error) {
+        console.error(error);
+        heroSlides = [];
+        adminReady.heroSlides = true;
+        renderHeroSlidesTable();
+        setAdminStatus('تعذر تحميل شرائح الهيرو.', 'error');
+        setAdminLoading(false);
+    }));
+
     unsubscribers.push(db.collection('settings').doc('config').onSnapshot(function (docSnap) {
         siteSettings = normalizeSettings(docSnap.exists ? docSnap.data() : DEFAULT_SITE_SETTINGS);
         adminReady.settings = true;
@@ -168,7 +189,7 @@ function subscribeToCollections() {
 }
 
 function checkAdminReady() {
-    if (adminReady.products && adminReady.discounts && adminReady.orders && adminReady.settings) {
+    if (adminReady.products && adminReady.discounts && adminReady.orders && adminReady.settings && adminReady.heroSlides) {
         setAdminLoading(false);
         setAdminStatus('تمت مزامنة البيانات بنجاح.', 'success');
     }
@@ -386,6 +407,71 @@ function toggleDiscountValueField() {
     if (type === 'brand' || type === 'category') renderDiscountValueOptions();
 }
 
+function renderHeroSlidesTable() {
+    var tbody = document.getElementById('heroSlidesTableBody');
+    if (!tbody) return;
+    if (!heroSlides.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">لا توجد شرائح هيرو حالياً.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = heroSlides.map(function (slide) {
+        var preview = slide.mediaType === 'video'
+            ? '<video src="' + slide.mediaUrl + '" muted playsinline preload="metadata"></video>'
+            : '<img src="' + slide.mediaUrl + '" alt="' + slide.title + '" onerror="this.src=\'' + FALLBACK_IMAGE + '\'">';
+        var mediaTypeLabel = slide.mediaType === 'video' ? 'فيديو' : 'صورة';
+        return '<tr><td><div class="admin-media-preview">' + preview + '</div></td><td>' + escapeHtml(slide.title || '-') + '</td><td>' + escapeHtml(slide.subtitle || '-') + '</td><td><span class="status-tag normal">' + mediaTypeLabel + '</span></td><td>' + (Number(slide.order) || 0) + '</td><td class="actions"><button class="btn-edit" onclick="editHeroSlide(\'' + slide.id + '\')">تعديل</button><button class="btn-delete" onclick="deleteHeroSlide(\'' + slide.id + '\')">حذف</button></td></tr>';
+    }).join('');
+}
+
+function openHeroSlideModal(slide) {
+    document.getElementById('heroSlideModalTitle').textContent = slide ? 'تعديل شريحة هيرو' : 'إضافة شريحة هيرو';
+    document.getElementById('heroSlideId').value = slide ? slide.id : '';
+    document.getElementById('heroSlideMediaUrl').value = slide ? slide.mediaUrl : '';
+    document.getElementById('heroSlideMediaType').value = slide ? slide.mediaType : 'image';
+    document.getElementById('heroSlideTitle').value = slide ? slide.title : '';
+    document.getElementById('heroSlideSubtitle').value = slide ? slide.subtitle : '';
+    document.getElementById('heroSlideOrder').value = slide ? (Number(slide.order) || 1) : (heroSlides.length + 1);
+    document.getElementById('heroSlideModal').style.display = 'flex';
+}
+
+function editHeroSlide(id) {
+    var slide = heroSlides.find(function (entry) { return entry.id === id; });
+    if (slide) openHeroSlideModal(slide);
+}
+
+async function saveHeroSlide(event) {
+    event.preventDefault();
+    var existingId = document.getElementById('heroSlideId').value;
+    var heroSlideData = normalizeHeroSlide({
+        id: existingId || 'hero_' + Date.now(),
+        mediaUrl: document.getElementById('heroSlideMediaUrl').value.trim(),
+        mediaType: document.getElementById('heroSlideMediaType').value,
+        title: document.getElementById('heroSlideTitle').value.trim(),
+        subtitle: document.getElementById('heroSlideSubtitle').value.trim(),
+        order: parseInt(document.getElementById('heroSlideOrder').value || '1', 10)
+    });
+
+    if (!heroSlideData.mediaUrl || !heroSlideData.title || !heroSlideData.subtitle) {
+        alert('يرجى تعبئة جميع الحقول المطلوبة.');
+        return;
+    }
+
+    setAdminLoading(true);
+    await db.collection('heroSlides').doc(String(heroSlideData.id)).set(heroSlideData, { merge: false });
+    setAdminLoading(false);
+    closeModal('heroSlideModal');
+    setAdminStatus('تم حفظ شريحة الهيرو.', 'success');
+}
+
+async function deleteHeroSlide(id) {
+    if (!confirm('هل تريد حذف شريحة الهيرو هذه؟')) return;
+    setAdminLoading(true);
+    await db.collection('heroSlides').doc(String(id)).delete();
+    setAdminLoading(false);
+    setAdminStatus('تم حذف شريحة الهيرو.', 'success');
+}
+
 function renderDiscountsTable() {
     var tbody = document.getElementById('discountsTableBody');
     if (!discounts.length) {
@@ -566,7 +652,8 @@ function renderDashboard() {
         statCard('طلبات هذا الأسبوع', ordersWeek, 'آخر 7 أيام'),
         statCard('طلبات هذا الشهر', ordersMonth, 'آخر 30 يوم'),
         statCard('عدد المنتجات', products.length, 'في المتجر'),
-        statCard('عدد الخصومات', discounts.length, 'الخصومات النشطة')
+        statCard('عدد الخصومات', discounts.length, 'الخصومات النشطة'),
+        statCard('شرائح الهيرو', heroSlides.length, 'في السلايدر الرئيسي')
     ].join('');
 
     renderRevenueChart();

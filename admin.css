@@ -213,3 +213,20 @@ html, body { font-family: 'Cairo', 'Tajawal', sans-serif; background: #fdfbf7; c
     accent-color: #b8860b;
     cursor: pointer;
 }
+.admin-media-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fafaf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-media-preview img,
+.admin-media-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

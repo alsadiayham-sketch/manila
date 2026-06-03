@@ -28,8 +28,9 @@
                 <div class="admin-tabs">
                     <button class="tab-btn active" onclick="switchTab('dashboard', this)">لوحة المعلومات</button>
                     <button class="tab-btn" onclick="switchTab('products', this)">المنتجات</button>
-                    <button class="tab-btn" onclick="switchTab('orders', this)">الطلبات</button>
                     <button class="tab-btn" onclick="switchTab('settings', this)">الإعدادات</button>
+                    <button class="tab-btn" onclick="switchTab('hero', this)">الهيرو</button>
+                    <button class="tab-btn" onclick="switchTab('orders', this)">الطلبات</button>
                 </div>
                 <button class="logout-btn" onclick="logout()">خروج</button>
             </div>
@@ -123,6 +124,22 @@
                 <button type="submit" class="btn-save">حفظ الإعدادات</button>
             </form>
         </div>
+
+        <div class="tab-content" id="tab-hero">
+            <div class="tab-header">
+                <h3>إدارة الهيرو</h3>
+                <div class="header-actions">
+                    <button class="btn-add" onclick="openHeroSlideModal()">إضافة شريحة</button>
+                </div>
+            </div>
+            <div class="discount-info"><p>أضيفي صوراً أو فيديوهات للواجهة الرئيسية، رتّبيها كما تريدين وسيتم تحديث السلايدر مباشرة في الموقع.</p></div>
+            <div class="products-table-container">
+                <table class="admin-table">
+                    <thead><tr><th>معاينة</th><th>العنوان</th><th>النص الفرعي</th><th>نوع الوسيط</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+                    <tbody id="heroSlidesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="productModal" style="display:none;">
@@ -165,6 +182,21 @@
                 <div class="form-group"><label>تاريخ الانتهاء (اختياري)</label><input type="date" id="discountExpiry"></div>
                 <div class="form-group"><label>وصف الخصم (يظهر في البانر)</label><input type="text" id="discountDescription" placeholder="خصم 20% على جميع منتجات..." required></div>
                 <div class="modal-actions"><button type="submit" class="btn-save">حفظ</button><button type="button" class="btn-cancel" onclick="closeModal('discountModal')">إلغاء</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="heroSlideModal" style="display:none;">
+        <div class="modal small-modal">
+            <h3 id="heroSlideModalTitle">إضافة شريحة هيرو</h3>
+            <form onsubmit="event.preventDefault(); saveHeroSlide(event)">
+                <input type="hidden" id="heroSlideId">
+                <div class="form-group"><label>رابط الوسيط</label><input type="url" id="heroSlideMediaUrl" placeholder="https://..." required></div>
+                <div class="form-group"><label>نوع الوسيط</label><select id="heroSlideMediaType"><option value="image">صورة</option><option value="video">فيديو</option></select></div>
+                <div class="form-group"><label>العنوان</label><input type="text" id="heroSlideTitle" required></div>
+                <div class="form-group"><label>النص الفرعي</label><input type="text" id="heroSlideSubtitle" required></div>
+                <div class="form-group"><label>الترتيب</label><input type="number" id="heroSlideOrder" min="1" value="1" required></div>
+                <div class="modal-actions"><button type="submit" class="btn-save">حفظ</button><button type="button" class="btn-cancel" onclick="closeModal('heroSlideModal')">إلغاء</button></div>
             </form>
         </div>
     </div>
