@@ -3,47 +3,18 @@ var DEFAULT_PRODUCTS = [];
 var DEFAULT_DISCOUNTS = [];
 
 var DEFAULT_SITE_SETTINGS = {
-    whatsappNumber: '972594323826',
-    heroSubtitle: 'ملكة العطور الأصلية',
-    aboutText: 'مانيلا\nملكة العطور الأصلية\nموقعنا: رام الله\nتوصيل للضفة القدس الداخل\nSnap: manila.6',
-    instagramLink: 'https://www.instagram.com/manila_m1/',
+    whatsappNumber: '972598633659',
+    heroSubtitle: 'أرقى العطور العالمية والمحلية',
+    aboutText: 'Manila Perfume - وجهتك لأرقى العطور العالمية والمحلية.\nنقدم لكم تشكيلة واسعة من العطور النسائية والرجالية واليونيسكس،\nمن أشهر الماركات العالمية بأسعار منافسة.\nجميع العطور أصلية 100% مع توصيل لجميع المناطق.',
+    instagramLink: 'https://www.instagram.com/manila_perfume/',
     tiktokLink: ''
 };
 
-var DEFAULT_HERO_SLIDES = [
-    {
-        id: 'hero-default-1',
-        mediaUrl: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=1920&q=80',
-        mediaType: 'image',
-        title: 'عطور أصلية فاخرة',
-        subtitle: 'اكتشفي تشكيلتنا المميزة',
-        order: 1,
-        ctaText: 'تسوقي الآن',
-        ctaLink: '#products'
-    },
-    {
-        id: 'hero-default-2',
-        mediaUrl: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=1920&q=80',
-        mediaType: 'image',
-        title: 'ملكة العطور',
-        subtitle: 'أجود الماركات العالمية',
-        order: 2,
-        ctaText: 'تسوقي الآن',
-        ctaLink: '#products'
-    },
-    {
-        id: 'hero-default-3',
-        mediaUrl: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=1920&q=80',
-        mediaType: 'image',
-        title: 'عروض حصرية',
-        subtitle: 'خصومات تصل حتى 50%',
-        order: 3,
-        ctaText: 'تسوقي الآن',
-        ctaLink: '#products'
-    }
+var BRANDS_DATA = [
+  { name: 'Dolce Gusto', logo: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=100&h=100&fit=crop' },
+  { name: 'Lavazza', logo: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefda?w=100&h=100&fit=crop' },
+  { name: 'Manila Perfume', logo: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=100&h=100&fit=crop' }
 ];
-
-var BRANDS_DATA = [{ name: 'Manila', logo: 'logo.png' }];
 
 function normalizeSizeEntry(entry) {
     if (!entry) return { size: '-', unit: 'cm', price: 0 };
@@ -68,7 +39,8 @@ function normalizeProduct(product) {
         sizes: sizes.filter(function (size) { return size.size && size.price >= 0; }),
         discount: Number(product && product.discount) || 0,
         image: (product && product.image) || '',
-        status: (product && product.status) || 'normal'
+        status: (product && product.status) || 'normal',
+        quantity: (product && product.quantity !== undefined && product.quantity !== null) ? Number(product.quantity) : null
     };
 }
 
@@ -111,41 +83,12 @@ function buildWhatsAppUrl(number, message) {
     return 'https://wa.me/' + safeNumber + text;
 }
 
-function normalizeHeroSlide(slide, index) {
-    var source = slide || {};
-    var mediaUrl = String(source.mediaUrl || source.image || source.url || '').trim();
-    var mediaType = String(source.mediaType || '').toLowerCase();
-    if (['image', 'video'].indexOf(mediaType) === -1) {
-        mediaType = /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(mediaUrl) ? 'video' : 'image';
-    }
-    return {
-        id: String(source.id || source.docId || 'hero_' + Date.now() + '_' + (index || 0)),
-        mediaUrl: mediaUrl,
-        mediaType: mediaType || 'image',
-        title: String(source.title || '').trim(),
-        subtitle: String(source.subtitle || '').trim(),
-        order: Math.max(0, Number(source.order) || index || 0),
-        ctaText: String(source.ctaText || 'تسوقي الآن').trim(),
-        ctaLink: String(source.ctaLink || '#products').trim() || '#products'
-    };
-}
-
-function normalizeHeroSlides(list) {
-    return (Array.isArray(list) ? list : []).map(function (slide, index) {
-        return normalizeHeroSlide(slide, index + 1);
-    }).filter(function (slide) {
-        return !!slide.mediaUrl;
-    }).sort(function (a, b) {
-        return (Number(a.order) || 0) - (Number(b.order) || 0);
-    });
-}
-
 function normalizeSettings(settings) {
     var source = settings || {};
     return {
         whatsappNumber: extractWhatsappNumber(source.whatsappNumber || source.whatsappLink || DEFAULT_SITE_SETTINGS.whatsappNumber),
         heroSubtitle: String(source.heroSubtitle || DEFAULT_SITE_SETTINGS.heroSubtitle),
-        aboutText: 'مانيلا\nملكة العطور الأصلية\nموقعنا: رام الله\nتوصيل للضفة القدس الداخل\nSnap: manila.6',
+        aboutText: String(source.aboutText || DEFAULT_SITE_SETTINGS.aboutText),
         instagramLink: String(source.instagramLink || DEFAULT_SITE_SETTINGS.instagramLink),
         tiktokLink: String(source.tiktokLink || DEFAULT_SITE_SETTINGS.tiktokLink)
     };
@@ -267,8 +210,8 @@ function getTotalDisplayText(total, hasPending) {
 function normalizeCartItems(items, products) {
     return (Array.isArray(items) ? items : []).map(function (item) {
         if (isCustomPackageItem(item)) return normalizeCustomPackageItem(item);
-        var itemId = item.id != null ? String(item.id) : '';
-        var product = Array.isArray(products) ? products.find(function (entry) { return String(entry.id) === itemId; }) : null;
+        var itemId = item.id;
+        var product = Array.isArray(products) ? products.find(function (entry) { return String(entry.id) === String(itemId); }) : null;
         var sizesLength = product && Array.isArray(product.sizes) && product.sizes.length ? product.sizes.length : 1;
         var safeSizeIdx = Math.max(0, Math.min(sizesLength - 1, parseInt(item.sizeIdx, 10) || 0));
         return {

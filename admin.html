@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manila Perfume - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <title>Manila Perfume - لوحة التحكم</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="login-screen" id="loginScreen">
         <div class="login-card">
             <h1>لوحة التحكم</h1>
-            <p>مانيلا</p>
+            <p>Manila Perfume</p>
             <form onsubmit="handleLogin(event)">
                 <input type="text" id="loginUser" placeholder="اسم المستخدم" required>
                 <input type="password" id="loginPass" placeholder="كلمة المرور" required>
@@ -28,9 +29,9 @@
                 <div class="admin-tabs">
                     <button class="tab-btn active" onclick="switchTab('dashboard', this)">لوحة المعلومات</button>
                     <button class="tab-btn" onclick="switchTab('products', this)">المنتجات</button>
-                    <button class="tab-btn" onclick="switchTab('settings', this)">الإعدادات</button>
-                    <button class="tab-btn" onclick="switchTab('hero', this)">الهيرو</button>
                     <button class="tab-btn" onclick="switchTab('orders', this)">الطلبات</button>
+                    <button class="tab-btn" onclick="switchTab('hero', this)">السلايدر</button>
+                    <button class="tab-btn" onclick="switchTab('settings', this)">الإعدادات</button>
                 </div>
                 <button class="logout-btn" onclick="logout()">خروج</button>
             </div>
@@ -95,7 +96,7 @@
             <div class="tab-header">
                 <h3>إدارة الطلبات</h3>
                 <div class="orders-filters">
-                    <input type="text" id="orderSearchInput" placeholder="ابحثي بالاسم أو الهاتف" oninput="renderOrdersTable()">
+                    <input type="text" id="orderSearchInput" placeholder="ابحث بالاسم أو الهاتف" oninput="renderOrdersTable()">
                     <select id="orderStatusFilter" onchange="renderOrdersTable()">
                         <option value="all">كل الحالات</option>
                         <option value="new">جديد</option>
@@ -113,6 +114,14 @@
             </div>
         </div>
 
+        <div class="tab-content" id="tab-hero">
+            <div class="tab-header">
+                <h3>إدارة السلايدر</h3>
+                <button class="btn-add" onclick="openHeroSlideModal()">+ إضافة سلايد</button>
+            </div>
+            <div class="hero-slides-list" id="heroSlidesList"></div>
+        </div>
+
         <div class="tab-content" id="tab-settings">
             <div class="tab-header"><h3>إعدادات الموقع</h3></div>
             <form class="settings-form" onsubmit="event.preventDefault(); saveSettingsForm(event)">
@@ -123,22 +132,6 @@
                 <div class="form-group"><label>رابط TikTok</label><input type="url" id="settingTiktok" placeholder="https://tiktok.com/..."></div>
                 <button type="submit" class="btn-save">حفظ الإعدادات</button>
             </form>
-        </div>
-
-        <div class="tab-content" id="tab-hero">
-            <div class="tab-header">
-                <h3>إدارة الهيرو</h3>
-                <div class="header-actions">
-                    <button class="btn-add" onclick="openHeroSlideModal()">إضافة شريحة</button>
-                </div>
-            </div>
-            <div class="discount-info"><p>أضيفي صوراً أو فيديوهات للواجهة الرئيسية، رتّبيها كما تريدين وسيتم تحديث السلايدر مباشرة في الموقع.</p></div>
-            <div class="products-table-container">
-                <table class="admin-table">
-                    <thead><tr><th>معاينة</th><th>العنوان</th><th>النص الفرعي</th><th>نوع الوسيط</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
-                    <tbody id="heroSlidesTableBody"></tbody>
-                </table>
-            </div>
         </div>
     </div>
 
@@ -165,6 +158,7 @@
                     <div id="imagePreview" class="image-preview"></div>
                 </div>
                 <div class="form-group"><label>الحالة</label><select id="productStatus"><option value="normal">عادي</option><option value="bestseller">الأكثر مبيعاً</option><option value="special">مميز</option><option value="soldout">نفذت الكمية</option></select></div>
+                <div class="form-group"><label>الكمية المتوفرة (اتركها فارغة = غير محدود)</label><input type="number" id="productQuantity" min="0" placeholder="غير محدود"></div>
                 <div class="modal-actions"><button type="submit" class="btn-save">حفظ</button><button type="button" class="btn-cancel" onclick="closeModal('productModal')">إلغاء</button></div>
             </form>
         </div>
@@ -188,28 +182,28 @@
 
     <div class="modal-overlay" id="heroSlideModal" style="display:none;">
         <div class="modal small-modal">
-            <h3 id="heroSlideModalTitle">إضافة شريحة هيرو</h3>
+            <h3 id="heroSlideModalTitle">إضافة سلايد</h3>
             <form onsubmit="event.preventDefault(); saveHeroSlide(event)">
                 <input type="hidden" id="heroSlideId">
-                <div class="form-group"><label>الوسيط (صورة أو فيديو)</label>
-                    <div class="image-upload-group">
-                        <input type="file" id="heroSlideFile" accept="image/*,video/*" onchange="previewHeroMedia(this)">
-                        <span class="upload-or">أو</span>
-                        <input type="url" id="heroSlideMediaUrl" placeholder="رابط الصورة أو الفيديو https://...">
-                    </div>
-                    <div id="heroMediaPreview" class="image-preview"></div>
+                <div class="form-group"><label>النوع</label><select id="heroSlideType" onchange="toggleHeroUploadHint()"><option value="image">صورة</option><option value="video">فيديو (يتحول لـ GIF)</option></select></div>
+                <div class="form-group">
+                    <label>رفع ملف</label>
+                    <input type="file" id="heroSlideFile" accept="image/*,video/*" onchange="handleHeroFileUpload(this)">
+                    <p class="upload-hint" id="heroUploadHint">ارفع صورة أو فيديو (يتم تحويل الفيديو إلى GIF متحرك)</p>
+                    <div id="heroUploadPreview" style="margin-top:8px;"></div>
+                    <div id="heroUploadProgress" style="display:none;margin-top:8px;"><span>جاري تحويل الفيديو...</span><progress id="heroGifProgress" value="0" max="100" style="width:100%;"></progress></div>
                 </div>
-                <input type="hidden" id="heroSlideMediaType" value="image">
-                <div class="form-group"><label>العنوان</label><input type="text" id="heroSlideTitle" required></div>
-                <div class="form-group"><label>النص الفرعي</label><input type="text" id="heroSlideSubtitle" required></div>
-                <div class="form-group"><label>الترتيب</label><input type="number" id="heroSlideOrder" min="1" value="1" required></div>
-                <div class="modal-actions"><button type="submit" class="btn-save">حفظ</button><button type="button" class="btn-cancel" onclick="closeModal('heroSlideModal')">إلغاء</button></div>
+                <div class="form-group"><label>أو رابط مباشر (URL)</label><input type="url" id="heroSlideUrl" placeholder="https://..."></div>
+                <div class="form-group"><label>العنوان (اختياري)</label><input type="text" id="heroSlideTitle"></div>
+                <div class="form-group"><label>الوصف (اختياري)</label><input type="text" id="heroSlideSubtitle"></div>
+                <div class="form-group"><label>الترتيب</label><input type="number" id="heroSlideOrder" value="0" min="0"></div>
+                <div class="modal-actions"><button type="submit" class="btn-save" id="heroSaveBtn">حفظ</button><button type="button" class="btn-cancel" onclick="closeModal('heroSlideModal')">إلغاء</button></div>
             </form>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>

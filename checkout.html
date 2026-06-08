@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manila Perfume</title>
+    <title>Manila Perfume | إتمام الطلب</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -111,8 +112,23 @@
 
         document.addEventListener('DOMContentLoaded', initializeCheckout);
 
+        window.addEventListener('pageshow', function () {
+            if (localStorage.getItem('manila_pending_confirmation') === '1') {
+                localStorage.removeItem('manila_pending_confirmation');
+                window.location.href = 'confirmation.html';
+            }
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden && localStorage.getItem('manila_pending_confirmation') === '1') {
+                localStorage.removeItem('manila_pending_confirmation');
+                window.location.href = 'confirmation.html';
+            }
+        });
+
         function initializeCheckout() {
             cart = normalizeCartItems(JSON.parse(localStorage.getItem('manila_cart') || '[]'), products);
+            saveCart();
             render();
             setStatus('');
 
@@ -174,7 +190,7 @@
         function render() {
             var container = document.getElementById('checkoutContent');
             if (cart.length === 0) {
-                container.innerHTML = '<div class="empty-checkout"><span>•</span><p>السلة فارغة! أضيفي منتجات أولاً</p><a href="index.html">تسوقي الآن</a></div>';
+                container.innerHTML = '<div class="empty-checkout"><span>•</span><p>السلة فارغة! أضف منتجات أولاً</p><a href="index.html">تسوق الآن</a></div>';
                 return;
             }
 
@@ -185,7 +201,7 @@
                 var sizeData = getSizeData(product, item.sizeIdx);
                 var pricing = getFinalPrice(product, item.sizeIdx, discounts);
                 var lineTotal = pricing.final * item.qty;
-                return '<div class="checkout-item"><img src="' + product.image + '" alt="' + product.name + '"><div class="checkout-item-info"><h4>' + product.name + '</h4><span class="item-brand">' + product.brand + '</span><span class="item-size">' + getSizeLabel(sizeData) + '</span></div><div class="checkout-item-qty"><button onclick="changeQty(' + item.id + ', ' + item.sizeIdx + ', -1)">−</button><span>' + item.qty + '</span><button onclick="changeQty(' + item.id + ', ' + item.sizeIdx + ', 1)">+</button></div><div class="checkout-item-price">' + formatCurrency(lineTotal) + '</div><button class="checkout-item-remove" onclick="removeItem(' + item.id + ', ' + item.sizeIdx + ')">✕</button></div>';
+                return '<div class="checkout-item"><img src="' + product.image + '" alt="' + product.name + '"><div class="checkout-item-info"><h4>' + product.name + '</h4><span class="item-brand">' + product.brand + '</span><span class="item-size">' + getSizeLabel(sizeData) + '</span></div><div class="checkout-item-qty"><button onclick="changeQty(\'' + item.id + '\', ' + item.sizeIdx + ', -1)">−</button><span>' + item.qty + '</span><button onclick="changeQty(\'' + item.id + '\', ' + item.sizeIdx + ', 1)">+</button></div><div class="checkout-item-price">' + formatCurrency(lineTotal) + '</div><button class="checkout-item-remove" onclick="removeItem(\'' + item.id + '\', ' + item.sizeIdx + ')">✕</button></div>';
             }).join('');
 
             var subtotal = getSubtotal();
@@ -346,6 +362,18 @@
                         };
                     }
                     var product = products.find(function (entry) { return entry.id === item.id; });
+                    if (!product) {
+                        return {
+                            productId: item.id,
+                            name: 'منتج غير متوفر',
+                            brand: '',
+                            sizeIdx: item.sizeIdx,
+                            sizeLabel: '',
+                            qty: item.qty,
+                            price: item.price || 0,
+                            lineTotal: (item.price || 0) * item.qty
+                        };
+                    }
                     var sizeData = getSizeData(product, item.sizeIdx);
                     var pricing = getFinalPrice(product, item.sizeIdx, discounts);
                     return {
@@ -406,19 +434,12 @@
         }
 
         function showOrderSuccess(order) {
-            var container = document.getElementById('checkoutContent');
-            var whatsappUrl = buildWhatsAppUrl(siteSettings.whatsappNumber || '970595455369', buildWhatsAppMessage(order));
-            var html = '';
-            html += '<div class="checkout-success-card">';
-            html += '<h3>تم حفظ طلبك بنجاح</h3>';
-            html += '<div class="checkout-success-order-id">رقم الطلب: ' + order.id + '</div>';
-            html += '<p>يمكنك الآن إرسال الطلب عبر واتساب بشكل اختياري، أو العودة مباشرة إلى صفحة التأكيد والمتجر.</p>';
-            html += '<div class="checkout-success-actions">';
-            html += '<a href="' + whatsappUrl + '" target="_blank" rel="noopener" class="btn-success-whatsapp">إرسال عبر واتساب</a>';
-            html += '<button type="button" class="btn-success-back" onclick="window.location.href=\'confirmation.html\'">تم، عودة للمتجر</button>';
-            html += '</div></div>';
-            container.innerHTML = html;
-            setStatus('تم حفظ الطلب بنجاح. رقم الطلب: ' + order.id, 'success');
+            localStorage.setItem('manila_last_order', JSON.stringify(order));
+            localStorage.setItem('manila_cart', '[]');
+            localStorage.setItem('manila_pending_confirmation', '1');
+            cart = [];
+            var whatsappUrl = buildWhatsAppUrl(siteSettings.whatsappNumber || '970595170026', buildWhatsAppMessage(order));
+            window.location.href = whatsappUrl;
         }
 
         function confirmOrder() {
@@ -438,7 +459,37 @@
             button.textContent = 'جاري حفظ الطلب...';
             setStatus('جاري حفظ الطلب...', '');
 
-            var order = buildOrder();
+            // Check stock availability
+            var unavailable = [];
+            cart.forEach(function (item) {
+                if (item.type === 'custom_package') return;
+                var product = products.find(function (entry) { return entry.id === item.id; });
+                if (!product) return;
+                if (product.status === 'soldout' || (product.quantity !== undefined && product.quantity !== null && product.quantity <= 0)) {
+                    unavailable.push(product.name);
+                } else if (product.quantity !== undefined && product.quantity !== null && item.qty > product.quantity) {
+                    unavailable.push(product.name + ' (متوفر فقط ' + product.quantity + ')');
+                }
+            });
+            if (unavailable.length > 0) {
+                alert('المنتجات التالية غير متوفرة بالكمية المطلوبة:\n- ' + unavailable.join('\n- '));
+                button.disabled = false;
+                button.textContent = originalText;
+                setStatus('');
+                return;
+            }
+
+            try {
+                var order = buildOrder();
+            } catch (e) {
+                console.error('buildOrder error:', e);
+                alert('حدث خطأ أثناء تجهيز الطلب: ' + e.message);
+                button.disabled = false;
+                button.textContent = originalText;
+                setStatus('');
+                return;
+            }
+
             if (!window.db) {
                 alert('تعذر الاتصال بقاعدة البيانات حالياً، حاولي مرة أخرى.');
                 button.disabled = false;
@@ -448,13 +499,10 @@
             }
 
             db.collection('orders').doc(order.id).set(order).then(function () {
-                localStorage.setItem('manila_last_order', JSON.stringify(order));
-                localStorage.setItem('manila_cart', '[]');
-                cart = [];
                 showOrderSuccess(order);
             }).catch(function (error) {
-                console.error(error);
-                alert('تعذر حفظ الطلب حالياً، حاولي مرة أخرى.');
+                console.error('Firestore save error:', error);
+                alert('تعذر حفظ الطلب: ' + (error.message || 'خطأ غير معروف'));
                 button.disabled = false;
                 button.textContent = originalText;
                 setStatus('');
