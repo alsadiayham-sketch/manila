@@ -914,13 +914,33 @@ function convertVideoToGif(file) {
         gif.on('finished', function(blob) {
             URL.revokeObjectURL(url);
             progressEl.style.display = 'none';
-            saveBtn.disabled = false;
 
+            // Upload GIF to imgbb to bypass size limit
+            previewEl.innerHTML = '<p style="color:#b8860b;">جاري الرفع إلى imgbb...</p>';
             var reader = new FileReader();
             reader.onload = function(e) {
-                heroUploadedDataUrl = e.target.result;
-                previewEl.innerHTML = '<img src="' + heroUploadedDataUrl + '" style="max-width:200px;max-height:120px;border-radius:6px;">';
-                document.getElementById('heroSlideUrl').value = '';
+                var base64 = e.target.result.split(',')[1];
+                var formData = new FormData();
+                formData.append('key', 'a0a3a1d98dc6f0c21027543d3e0ef238');
+                formData.append('image', base64);
+                fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        saveBtn.disabled = false;
+                        if (data.success) {
+                            heroUploadedDataUrl = data.data.url;
+                            previewEl.innerHTML = '<img src="' + heroUploadedDataUrl + '" style="max-width:200px;max-height:120px;border-radius:6px;">';
+                            document.getElementById('heroSlideUrl').value = '';
+                        } else {
+                            alert('فشل الرفع: ' + (data.error ? data.error.message : 'خطأ غير معروف'));
+                            previewEl.innerHTML = '';
+                        }
+                    })
+                    .catch(function(err) {
+                        saveBtn.disabled = false;
+                        alert('فشل الرفع: ' + err.message);
+                        previewEl.innerHTML = '';
+                    });
             };
             reader.readAsDataURL(blob);
         });
