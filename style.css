@@ -4,9 +4,9 @@
     --primary-light: #333333;
     --primary-lighter: #f5f5f5;
     --primary-dark: #000000;
-    --accent: #ff4444;
-    --accent-dark: #cc0000;
-    --gold: #ff4444;
+    --accent: #b8860b;
+    --accent-dark: #9a7209;
+    --gold: #b8860b;
     --bg: #f5f5f5;
     --bg-alt: #eaeaea;
     --text: #111111;
@@ -467,13 +467,13 @@ body.has-banner .mobile-menu { top: 102px; }
 }
 
 .status-badge.bestseller {
-    background: #fbbf24;
-    color: #92400e;
+    background: #d4a574;
+    color: #3d2514;
 }
 
 .status-badge.special {
-    background: #c9a96e;
-    color: #111;
+    background: #e8c9a0;
+    color: #3d2514;
 }
 
 .status-badge.soldout {
@@ -589,7 +589,7 @@ body.has-banner .mobile-menu { top: 102px; }
     position: absolute;
     top: 10px;
     left: 10px;
-    background: #ef4444;
+    background: #c8956c;
     color: white;
     padding: 4px 10px;
     border-radius: 20px;
@@ -1087,7 +1087,7 @@ html[dir="rtl"] .cart-sidebar {
     border-radius: 25px;
     padding: 8px 12px;
     font-size: 0.85rem;
-    background: var(--primary);
+    background: #b8860b;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -1096,7 +1096,7 @@ html[dir="rtl"] .cart-sidebar {
     transition: var(--transition);
 }
 .product-card-actions .btn-add-cart:hover {
-    background: var(--primary-dark);
+    background: #9a7209;
 }
 
 /* ===== PDP Modal ===== */

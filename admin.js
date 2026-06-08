@@ -827,24 +827,30 @@ function handleHeroFileUpload(input) {
         document.getElementById('heroSlideType').value = 'video';
         convertVideoToGif(file);
     } else {
-        // Image: convert to base64
+        // Image: upload to imgbb for unlimited size
         var reader = new FileReader();
         reader.onload = function(e) {
-            // Resize image
-            var img = new Image();
-            img.onload = function() {
-                var canvas = document.createElement('canvas');
-                var maxW = 1200;
-                var scale = Math.min(1, maxW / img.width);
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                heroUploadedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                document.getElementById('heroUploadPreview').innerHTML = '<img src="' + heroUploadedDataUrl + '" style="max-width:200px;max-height:120px;border-radius:6px;">';
-                document.getElementById('heroSlideUrl').value = '';
-            };
-            img.src = e.target.result;
+            var base64 = e.target.result.split(',')[1];
+            document.getElementById('heroUploadPreview').innerHTML = '<p style="color:#b8860b;">جاري الرفع إلى imgbb...</p>';
+            var formData = new FormData();
+            formData.append('key', 'a0a3a1d98dc6f0c21027543d3e0ef238');
+            formData.append('image', base64);
+            fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        heroUploadedDataUrl = data.data.url;
+                        document.getElementById('heroUploadPreview').innerHTML = '<img src="' + heroUploadedDataUrl + '" style="max-width:200px;max-height:120px;border-radius:6px;">';
+                        document.getElementById('heroSlideUrl').value = '';
+                    } else {
+                        alert('فشل الرفع: ' + (data.error ? data.error.message : 'خطأ غير معروف'));
+                        document.getElementById('heroUploadPreview').innerHTML = '';
+                    }
+                })
+                .catch(function(err) {
+                    alert('فشل الرفع: ' + err.message);
+                    document.getElementById('heroUploadPreview').innerHTML = '';
+                });
         };
         reader.readAsDataURL(file);
     }
@@ -966,7 +972,7 @@ function saveHeroSlide(event) {
     var slideUrl = heroUploadedDataUrl || document.getElementById('heroSlideUrl').value;
     if (!slideUrl) { alert('يرجى رفع ملف أو إدخال رابط'); return; }
 
-    // Check if base64 data exceeds Firestore limit (~1MB)
+    // If still a base64 data URL (e.g. GIF), check Firestore limit
     if (slideUrl.startsWith('data:') && slideUrl.length > 1000000) {
         alert('الملف كبير جداً (' + Math.round(slideUrl.length/1024) + 'KB). يرجى رفع ملف أصغر أو فيديو أقصر.');
         return;
