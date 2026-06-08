@@ -1,19 +1,19 @@
 /* ===== Variables ===== */
 :root {
-    --primary: #111111;
-    --primary-light: #333333;
-    --primary-lighter: #f5f5f5;
-    --primary-dark: #000000;
-    --accent: #b8860b;
-    --accent-dark: #9a7209;
-    --gold: #b8860b;
-    --bg: #f5f5f5;
-    --bg-alt: #eaeaea;
-    --text: #111111;
-    --text-light: #555555;
+    --primary: #5c3d2e;
+    --primary-light: #7a5a4a;
+    --primary-lighter: #fdf8f3;
+    --primary-dark: #3d2514;
+    --accent: #c8956c;
+    --accent-dark: #a67550;
+    --gold: #c8956c;
+    --bg: #fdf8f3;
+    --bg-alt: #f5ece3;
+    --text: #3d2514;
+    --text-light: #7a5a4a;
     --white: #ffffff;
-    --shadow: 0 22px 70px rgba(0,0,0,0.1);
-    --shadow-hover: 0 10px 30px rgba(0,0,0,0.15);
+    --shadow: 0 22px 70px rgba(92,61,46,0.08);
+    --shadow-hover: 0 10px 30px rgba(92,61,46,0.12);
     --radius: 16px;
     --transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -517,9 +517,9 @@ body.has-banner .mobile-menu { top: 102px; }
 
 .filter-btn {
     padding: 8px 20px;
-    border: 2px solid var(--primary-light);
-    background: var(--primary-lighter);
-    color: var(--primary);
+    border: 2px solid #d4b896;
+    background: var(--white);
+    color: var(--text);
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
@@ -529,9 +529,9 @@ body.has-banner .mobile-menu { top: 102px; }
 }
 
 .filter-btn:hover, .filter-btn.active {
-    background: var(--primary);
-    color: var(--white);
-    border-color: var(--primary);
+    background: #c8956c;
+    color: #fff;
+    border-color: #c8956c;
 }
 
 /* ===== Products ===== */
@@ -1087,7 +1087,7 @@ html[dir="rtl"] .cart-sidebar {
     border-radius: 25px;
     padding: 8px 12px;
     font-size: 0.85rem;
-    background: #b8860b;
+    background: #c8956c;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -1096,7 +1096,7 @@ html[dir="rtl"] .cart-sidebar {
     transition: var(--transition);
 }
 .product-card-actions .btn-add-cart:hover {
-    background: #9a7209;
+    background: #a67550;
 }
 
 /* ===== PDP Modal ===== */
