@@ -833,7 +833,7 @@ function handleHeroFileUpload(input) {
             var base64 = e.target.result.split(',')[1];
             document.getElementById('heroUploadPreview').innerHTML = '<p style="color:#b8860b;">جاري الرفع إلى imgbb...</p>';
             var formData = new FormData();
-            formData.append('key', 'a0a3a1d98dc6f0c21027543d3e0ef238');
+            formData.append('key', 'de10f7f874d9dbf904fe0cd0ad00332d');
             formData.append('image', base64);
             fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData })
                 .then(function(res) { return res.json(); })
@@ -921,7 +921,7 @@ function convertVideoToGif(file) {
             reader.onload = function(e) {
                 var base64 = e.target.result.split(',')[1];
                 var formData = new FormData();
-                formData.append('key', 'a0a3a1d98dc6f0c21027543d3e0ef238');
+                formData.append('key', 'de10f7f874d9dbf904fe0cd0ad00332d');
                 formData.append('image', base64);
                 fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData })
                     .then(function(res) { return res.json(); })
